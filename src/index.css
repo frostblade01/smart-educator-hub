@@ -36,14 +36,16 @@
   }
 }
 
-.neumorphic {
-  @apply bg-card shadow-[20px_20px_60px_#1c1920,-20px_-20px_60px_#282430] transition-all duration-300;
-}
+@layer utilities {
+  .neumorphic {
+    @apply bg-card shadow-[20px_20px_60px_#1c1920,-20px_-20px_60px_#282430] transition-all duration-300;
+  }
 
-.neumorphic-inset {
-  @apply bg-muted shadow-[inset_20px_20px_60px_#1c1920,inset_-20px_-20px_60px_#282430];
-}
+  .neumorphic-inset {
+    @apply bg-muted shadow-[inset_20px_20px_60px_#1c1920,inset_-20px_-20px_60px_#282430];
+  }
 
-.neumorphic-button {
-  @apply neumorphic hover:shadow-[10px_10px_30px_#1c1920,-10px_-10px_30px_#282430] active:neumorphic-inset;
+  .neumorphic-button {
+    @apply neumorphic hover:shadow-[10px_10px_30px_#1c1920,-10px_-10px_30px_#282430] active:bg-muted active:shadow-[inset_20px_20px_60px_#1c1920,inset_-20px_-20px_60px_#282430];
+  }
 }
