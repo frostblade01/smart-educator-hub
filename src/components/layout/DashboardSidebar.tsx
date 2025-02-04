@@ -10,8 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard,
-  BookOpen,
-  MonitorPlay,
+  Sparkles,
   Puzzle,
   LineChart,
   Users,
@@ -26,14 +25,9 @@ const menuItems = [
     path: "/dashboard",
   },
   {
-    title: "AI Lesson Planner",
-    icon: BookOpen,
-    path: "/dashboard/lesson-planner",
-  },
-  {
-    title: "AI Virtual Teacher",
-    icon: MonitorPlay,
-    path: "/dashboard/virtual-teacher",
+    title: "AI Teaching Assistant",
+    icon: Sparkles,
+    path: "/dashboard/teaching-assistant",
   },
   {
     title: "AI Activity Generator",

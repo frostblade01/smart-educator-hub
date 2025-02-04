@@ -7,6 +7,10 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import NotFound from "./pages/NotFound";
+import AITeachingAssistant from "./pages/AITeachingAssistant";
+import ActivityGenerator from "./pages/ActivityGenerator";
+import StudentInsights from "./pages/StudentInsights";
+import Attendance from "./pages/Attendance";
 
 const queryClient = new QueryClient();
 
@@ -20,11 +24,10 @@ const App = () => (
           <Route path="/" element={<Login />} />
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
-            <Route path="lesson-planner" element={<div>Lesson Planner</div>} />
-            <Route path="virtual-teacher" element={<div>Virtual Teacher</div>} />
-            <Route path="activity-generator" element={<div>Activity Generator</div>} />
-            <Route path="student-insights" element={<div>Student Insights</div>} />
-            <Route path="attendance" element={<div>Attendance</div>} />
+            <Route path="teaching-assistant" element={<AITeachingAssistant />} />
+            <Route path="activity-generator" element={<ActivityGenerator />} />
+            <Route path="student-insights" element={<StudentInsights />} />
+            <Route path="attendance" element={<Attendance />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
