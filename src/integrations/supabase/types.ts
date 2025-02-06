@@ -9,7 +9,196 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          activity_type: string
+          created_at: string | null
+          difficulty_level: string
+          duration: number
+          grade_level: string
+          group_size: number | null
+          id: string
+          instructions: string
+          materials: string | null
+          special_needs: string | null
+          student_count: number
+          subject: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string | null
+          difficulty_level: string
+          duration: number
+          grade_level: string
+          group_size?: number | null
+          id?: string
+          instructions: string
+          materials?: string | null
+          special_needs?: string | null
+          student_count: number
+          subject: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string | null
+          difficulty_level?: string
+          duration?: number
+          grade_level?: string
+          group_size?: number | null
+          id?: string
+          instructions?: string
+          materials?: string | null
+          special_needs?: string | null
+          student_count?: number
+          subject?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      attendance: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          notes: string | null
+          status: string
+          student_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          status: string
+          student_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          student_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_videos: {
+        Row: {
+          created_at: string | null
+          duration: number | null
+          id: string
+          lesson_id: string | null
+          thumbnail_url: string | null
+          title: string
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration?: number | null
+          id?: string
+          lesson_id?: string | null
+          thumbnail_url?: string | null
+          title: string
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          duration?: number | null
+          id?: string
+          lesson_id?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_videos_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lessons: {
+        Row: {
+          created_at: string | null
+          duration: number
+          grade_level: string
+          id: string
+          lesson_details: string | null
+          subject: string
+          teaching_style: string
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration: number
+          grade_level: string
+          id?: string
+          lesson_details?: string | null
+          subject: string
+          teaching_style: string
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duration?: number
+          grade_level?: string
+          id?: string
+          lesson_details?: string | null
+          subject?: string
+          teaching_style?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          created_at: string | null
+          grade: string
+          id: string
+          name: string
+          special_needs: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          grade: string
+          id?: string
+          name: string
+          special_needs?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          grade?: string
+          id?: string
+          name?: string
+          special_needs?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
