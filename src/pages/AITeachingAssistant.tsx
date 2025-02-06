@@ -1,5 +1,5 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
 const AITeachingAssistant = () => {
+  const navigate = useNavigate();
   const [lessonDetails, setLessonDetails] = useState("");
   const [teachingStyle, setTeachingStyle] = useState("text");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -26,6 +27,30 @@ const AITeachingAssistant = () => {
   const [duration, setDuration] = useState("");
   const [generatingVideo, setGeneratingVideo] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("Please log in to access this page");
+        navigate("/");
+      }
+    };
+
+    checkAuth();
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate("/");
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   // Fetch lesson videos
   const { data: videos, refetch: refetchVideos } = useQuery({
@@ -48,9 +73,10 @@ const AITeachingAssistant = () => {
     }
 
     // Get the current user session
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError || !session) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
       toast.error("You must be logged in to create a lesson");
+      navigate("/");
       return;
     }
 
