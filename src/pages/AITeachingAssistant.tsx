@@ -9,9 +9,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertCircle, BookOpen, Brain, Clock, Presentation, Save, Timer, Video } from "lucide-react";
+import { AlertCircle, BookOpen, Brain, Clock, Presentation, Save, Timer, Video, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const AITeachingAssistant = () => {
   const [lessonDetails, setLessonDetails] = useState("");
@@ -22,25 +24,130 @@ const AITeachingAssistant = () => {
   const [selectedGrade, setSelectedGrade] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("");
   const [duration, setDuration] = useState("");
+  const [generatingVideo, setGeneratingVideo] = useState(false);
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
 
-  const handleGeneratePlan = () => {
-    if (!selectedGrade || !selectedSubject || !duration) {
+  // Fetch lesson videos
+  const { data: videos, refetch: refetchVideos } = useQuery({
+    queryKey: ['lesson_videos'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lesson_videos')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const handleGeneratePlan = async () => {
+    if (!selectedGrade || !selectedSubject || !duration || !lessonDetails) {
       toast.error("Please fill in all required fields");
       return;
     }
 
     setIsGenerating(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // First create the lesson record
+      const { data: lesson, error: lessonError } = await supabase
+        .from('lessons')
+        .insert({
+          title: `${selectedSubject} Lesson for ${selectedGrade}`,
+          grade_level: selectedGrade,
+          subject: selectedSubject,
+          duration: parseInt(duration),
+          teaching_style: teachingStyle,
+          lesson_details: lessonDetails,
+          user_id: (await supabase.auth.getUser()).data.user?.id
+        })
+        .select()
+        .single();
+
+      if (lessonError) throw lessonError;
+
+      // Generate the teaching video
+      setGeneratingVideo(true);
+      const response = await fetch('/api/generate-teaching-video', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lessonData: {
+            lessonId: lesson.id,
+            title: `${selectedSubject} Lesson for ${selectedGrade}`,
+            script: lessonDetails,
+            duration: parseInt(duration)
+          }
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+
+      setCurrentVideoId(data.video.id);
+      toast.success("Video generation started!");
+
+      // Start polling for video status
+      const checkStatus = async () => {
+        const statusResponse = await fetch('/api/check-video-status', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            predictionId: data.predictionId,
+            videoId: data.video.id
+          }),
+        });
+
+        const statusData = await statusResponse.json();
+        if (statusData.status === 'succeeded') {
+          toast.success("Video generated successfully!");
+          refetchVideos();
+          setGeneratingVideo(false);
+          return;
+        } else if (statusData.status === 'failed') {
+          toast.error("Video generation failed. Please try again.");
+          setGeneratingVideo(false);
+          return;
+        }
+
+        // Continue polling
+        setTimeout(checkStatus, 5000);
+      };
+
+      checkStatus();
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error("Failed to generate lesson plan and video");
+      setGeneratingVideo(false);
+    } finally {
       setIsGenerating(false);
-      toast.success("Lesson plan generated successfully!");
-    }, 2000);
+    }
+  };
+
+  const handleDeleteVideo = async (videoId: string) => {
+    try {
+      const { error } = await supabase
+        .from('lesson_videos')
+        .delete()
+        .eq('id', videoId);
+      
+      if (error) throw error;
+      
+      toast.success("Video deleted successfully");
+      refetchVideos();
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error("Failed to delete video");
+    }
   };
 
   const handleStartSession = () => {
     setIsSessionActive(true);
     toast.success("Virtual teaching session started");
-    // Start session timer
     const timer = setInterval(() => {
       setSessionTime((prev) => prev + 1);
     }, 1000);
@@ -163,9 +270,9 @@ const AITeachingAssistant = () => {
               </div>
 
               <div className="space-y-4">
-                <Label>Lesson Details</Label>
+                <Label>Lesson Details & Script</Label>
                 <Textarea
-                  placeholder="Enter your lesson topic, objectives, and any specific requirements..."
+                  placeholder="Enter your lesson topic, objectives, and the script for the virtual teacher..."
                   value={lessonDetails}
                   onChange={(e) => setLessonDetails(e.target.value)}
                   className="min-h-[150px] neumorphic-inset"
@@ -175,18 +282,18 @@ const AITeachingAssistant = () => {
               <div className="flex gap-4">
                 <Button
                   onClick={handleGeneratePlan}
-                  disabled={!lessonDetails || isGenerating}
+                  disabled={!lessonDetails || isGenerating || generatingVideo}
                   className="w-full neumorphic-button"
                 >
-                  {isGenerating ? (
+                  {(isGenerating || generatingVideo) ? (
                     <>
                       <AlertCircle className="mr-2 h-4 w-4 animate-spin" />
-                      Generating...
+                      {generatingVideo ? "Generating Video..." : "Generating..."}
                     </>
                   ) : (
                     <>
                       <Brain className="mr-2 h-4 w-4" />
-                      Generate Lesson Plan
+                      Generate Lesson & Video
                     </>
                   )}
                 </Button>
@@ -212,21 +319,62 @@ const AITeachingAssistant = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="aspect-video neumorphic-inset rounded-lg flex flex-col items-center justify-center p-6">
-                {isSessionActive ? (
-                  <div className="space-y-4 text-center">
-                    <Timer className="w-12 h-12 animate-pulse" />
-                    <p className="text-2xl font-bold">{formatTime(sessionTime)}</p>
-                    <p className="text-muted-foreground">Virtual Teaching Session in Progress</p>
-                    <Progress value={sessionTime % 100} className="w-64" />
-                  </div>
-                ) : (
-                  <div className="text-center space-y-4">
-                    <Presentation className="w-12 h-12 mx-auto" />
-                    <p className="text-lg text-muted-foreground">Ready to start virtual teaching session</p>
-                  </div>
-                )}
-              </div>
+              {videos && videos.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {videos.map((video) => (
+                    <div key={video.id} className="relative">
+                      {video.url ? (
+                        <div className="space-y-2">
+                          <video
+                            src={video.url}
+                            controls
+                            poster={video.thumbnail_url}
+                            className="w-full rounded-lg neumorphic"
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm font-medium">{video.title}</p>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => handleDeleteVideo(video.id)}
+                              className="h-8 w-8"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="aspect-video neumorphic flex items-center justify-center">
+                          <div className="text-center">
+                            <AlertCircle className="w-8 h-8 mx-auto mb-2 animate-pulse" />
+                            <p>Generating video...</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="aspect-video neumorphic-inset rounded-lg flex flex-col items-center justify-center p-6">
+                  {isSessionActive ? (
+                    <div className="space-y-4 text-center">
+                      <Timer className="w-12 h-12 animate-pulse" />
+                      <p className="text-2xl font-bold">{formatTime(sessionTime)}</p>
+                      <p className="text-muted-foreground">Virtual Teaching Session in Progress</p>
+                      <Progress value={sessionTime % 100} className="w-64" />
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-4">
+                      <Presentation className="w-12 h-12 mx-auto" />
+                      <p className="text-lg text-muted-foreground">
+                        No videos yet. Generate a lesson plan to create your first virtual teaching video!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Button
