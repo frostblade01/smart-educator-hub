@@ -47,9 +47,16 @@ const AITeachingAssistant = () => {
       return;
     }
 
+    // Get the current user session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      toast.error("You must be logged in to create a lesson");
+      return;
+    }
+
     setIsGenerating(true);
     try {
-      // First create the lesson record
+      // First create the lesson record with the user_id from the session
       const { data: lesson, error: lessonError } = await supabase
         .from('lessons')
         .insert({
@@ -59,7 +66,7 @@ const AITeachingAssistant = () => {
           duration: parseInt(duration),
           teaching_style: teachingStyle,
           lesson_details: lessonDetails,
-          user_id: (await supabase.auth.getUser()).data.user?.id
+          user_id: session.user.id  // Set the user_id from the session
         })
         .select()
         .single();
