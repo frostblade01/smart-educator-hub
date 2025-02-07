@@ -42,8 +42,7 @@ export const LessonPlannerForm = ({ onVideoGenerated }: LessonPlannerFormProps) 
           subject: selectedSubject,
           duration: parseInt(duration),
           teaching_style: teachingStyle,
-          lesson_details: lessonDetails,
-          user_id: 'default' // Adding required user_id field with a default value
+          lesson_details: lessonDetails
         })
         .select()
         .single();
