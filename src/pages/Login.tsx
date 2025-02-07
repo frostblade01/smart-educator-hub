@@ -6,6 +6,12 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+interface LoginResponse {
+  success: boolean;
+  user_id?: string;
+  message?: string;
+}
+
 const Login = () => {
   const [teacherId, setTeacherId] = useState("");
   const [password, setPassword] = useState("");
@@ -18,7 +24,7 @@ const Login = () => {
 
     try {
       // Call the teacher login function
-      const { data, error } = await supabase.rpc('handle_teacher_login', {
+      const { data, error } = await supabase.rpc<LoginResponse>('handle_teacher_login', {
         p_teacher_id: teacherId,
         p_password: password
       });
