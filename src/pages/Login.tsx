@@ -8,6 +8,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+interface LoginResponse {
+  success: boolean;
+  user_id?: string;
+  message?: string;
+}
+
 const Login = () => {
   const [teacherId, setTeacherId] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +32,9 @@ const Login = () => {
 
       if (error) throw error;
 
-      if (data.success) {
+      const response = data as LoginResponse;
+      
+      if (response.success) {
         toast.success("Login successful!");
         navigate("/");
       } else {
