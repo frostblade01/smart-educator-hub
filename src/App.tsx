@@ -11,6 +11,7 @@ import AITeachingAssistant from "./pages/AITeachingAssistant";
 import ActivityGenerator from "./pages/ActivityGenerator";
 import StudentInsights from "./pages/StudentInsights";
 import Attendance from "./pages/Attendance";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/login" element={<Login />} />
           <Route path="/" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="teaching-assistant" element={<AITeachingAssistant />} />

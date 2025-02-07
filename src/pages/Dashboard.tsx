@@ -1,6 +1,10 @@
+
 import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  
   const teacherProfile = {
     name: "Sarah Johnson",
     subject: "Mathematics",
@@ -12,6 +16,12 @@ const Dashboard = () => {
     { time: "9:00 AM", subject: "Math 10B", room: "Room 203" },
     { time: "10:00 AM", subject: "Free Period", room: "-" },
     { time: "11:00 AM", subject: "Math 11C", room: "Room 305" },
+  ];
+
+  const aiTools = [
+    { name: "AI Lesson Planner", path: "/teaching-assistant" },
+    { name: "AI Virtual Teacher", path: "/teaching-assistant" },
+    { name: "AI Activity Generator", path: "/activity-generator" },
   ];
 
   return (
@@ -56,13 +66,13 @@ const Dashboard = () => {
       <Card className="neumorphic p-6">
         <h2 className="text-2xl font-bold text-primary mb-4">Quick Access - AI Tools</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {["AI Lesson Planner", "AI Virtual Teacher", "AI Activity Generator"].map((tool) => (
+          {aiTools.map((tool) => (
             <button
-              key={tool}
+              key={tool.name}
               className="p-4 neumorphic-button rounded-lg text-center"
-              onClick={() => console.log(`Opening ${tool}`)}
+              onClick={() => navigate(tool.path)}
             >
-              {tool}
+              {tool.name}
             </button>
           ))}
         </div>
