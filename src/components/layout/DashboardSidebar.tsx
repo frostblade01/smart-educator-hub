@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import {
   Sidebar,
@@ -18,47 +17,41 @@ import {
   LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 const menuItems = [
   {
     title: "Dashboard",
     icon: LayoutDashboard,
-    path: "/",
+    path: "/dashboard",
   },
   {
     title: "AI Teaching Assistant",
     icon: Sparkles,
-    path: "/teaching-assistant",
+    path: "/dashboard/teaching-assistant",
   },
   {
     title: "AI Activity Generator",
     icon: Puzzle,
-    path: "/activity-generator",
+    path: "/dashboard/activity-generator",
   },
   {
     title: "Student Insights",
     icon: LineChart,
-    path: "/student-insights",
+    path: "/dashboard/student-insights",
   },
   {
     title: "Attendance & Class",
     icon: Users,
-    path: "/attendance",
+    path: "/dashboard/attendance",
   },
 ];
 
 const DashboardSidebar = () => {
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error("Failed to logout");
-      return;
-    }
+  const handleLogout = () => {
     toast.success("Logged out successfully");
-    navigate("/login");
+    navigate("/");
   };
 
   return (

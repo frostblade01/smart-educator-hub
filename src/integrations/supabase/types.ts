@@ -199,39 +199,12 @@ export type Database = {
         }
         Relationships: []
       }
-      teachers: {
-        Row: {
-          created_at: string | null
-          id: string
-          password: string
-          teacher_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          password: string
-          teacher_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          password?: string
-          teacher_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      handle_teacher_login: {
-        Args: {
-          p_teacher_id: string
-          p_password: string
-        }
-        Returns: Json
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
