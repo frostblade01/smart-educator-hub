@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,7 +26,6 @@ const AITeachingAssistant = () => {
   const [generatingVideo, setGeneratingVideo] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
 
-  // Fetch lesson videos
   const { data: videos, refetch: refetchVideos } = useQuery({
     queryKey: ['lesson_videos'],
     queryFn: async () => {
@@ -49,7 +47,6 @@ const AITeachingAssistant = () => {
 
     setIsGenerating(true);
     try {
-      // Create the lesson record without a user_id
       const { data: lesson, error: lessonError } = await supabase
         .from('lessons')
         .insert({
@@ -65,43 +62,33 @@ const AITeachingAssistant = () => {
 
       if (lessonError) throw lessonError;
 
-      // Generate the teaching video
       setGeneratingVideo(true);
-      const response = await fetch('/api/generate-teaching-video', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error: functionError } = await supabase.functions.invoke('generate-teaching-video', {
+        body: {
           lessonData: {
             lessonId: lesson.id,
             title: `${selectedSubject} Lesson for ${selectedGrade}`,
             script: lessonDetails,
             duration: parseInt(duration)
           }
-        }),
+        }
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      if (functionError) throw functionError;
 
       setCurrentVideoId(data.video.id);
       toast.success("Video generation started!");
 
-      // Start polling for video status
       const checkStatus = async () => {
-        const statusResponse = await fetch('/api/check-video-status', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        const { data: statusData, error: statusError } = await supabase.functions.invoke('check-video-status', {
+          body: {
             predictionId: data.predictionId,
             videoId: data.video.id
-          }),
+          }
         });
 
-        const statusData = await statusResponse.json();
+        if (statusError) throw statusError;
+
         if (statusData.status === 'succeeded') {
           toast.success("Video generated successfully!");
           refetchVideos();
@@ -113,7 +100,6 @@ const AITeachingAssistant = () => {
           return;
         }
 
-        // Continue polling
         setTimeout(checkStatus, 5000);
       };
 
