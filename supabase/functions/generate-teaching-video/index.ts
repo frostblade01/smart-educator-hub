@@ -20,7 +20,7 @@ serve(async (req) => {
     const { lessonData } = await req.json()
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Generate video using Replicate's D-ID API
+    // Generate video using Replicate's Wav2Lip model
     const response = await fetch("https://api.replicate.com/v1/predictions", {
       method: "POST",
       headers: {
@@ -28,13 +28,13 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        version: "aa96e8c43dad0712495d99f8bba8d58a11c6da1edec79f20473b1fd38781f148",
+        version: "16a37ad3d51a0c576558d5d4d3e454751277227636fb7475b9834030701e06f4",
         input: {
-          audio_path: null,
-          driver_path: null,
+          face: "https://replicate.delivery/pbxt/IqA45T3zEqkGHBXkXjDWZMxWTqOONHzBlu9YrisV52wJQPAj/face.jpg",
+          audio: null,
           text: lessonData.script,
-          source_image: "https://replicate.delivery/pbxt/QbP6Fh3ZXwKON8IvYGXBD2ZTyxJXVxKZBjJjB00jjnk60prE/image.jpg",
-          result_format: "mp4"
+          speaker: "en_speaker_9",
+          voice_preset: "natural"
         }
       }),
     })
