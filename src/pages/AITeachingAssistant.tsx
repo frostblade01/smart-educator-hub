@@ -308,7 +308,7 @@ const AITeachingAssistant = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {videos.map((video) => (
                     <div key={video.id} className="relative">
-                      {video.url ? (
+                      {video.status === 'succeeded' ? (
                         <div className="space-y-2">
                           <video
                             src={video.url}
@@ -334,7 +334,7 @@ const AITeachingAssistant = () => {
                         <div className="aspect-video neumorphic flex items-center justify-center">
                           <div className="text-center">
                             <AlertCircle className="w-8 h-8 mx-auto mb-2 animate-pulse" />
-                            <p>Generating video...</p>
+                            <p>Generating video... ({video.status})</p>
                           </div>
                         </div>
                       )}

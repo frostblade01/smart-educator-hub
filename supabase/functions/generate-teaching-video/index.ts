@@ -20,7 +20,21 @@ serve(async (req) => {
     const { lessonData } = await req.json()
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Generate video using Replicate's Wav2Lip model
+    // Create initial video record with pending status
+    const { data: lessonVideo, error: dbError } = await supabase
+      .from('lesson_videos')
+      .insert({
+        lesson_id: lessonData.lessonId,
+        title: lessonData.title,
+        duration: lessonData.duration,
+        status: 'pending'
+      })
+      .select()
+      .single()
+
+    if (dbError) throw dbError
+
+    // Generate video using Replicate's text-to-speech model
     const response = await fetch("https://api.replicate.com/v1/predictions", {
       method: "POST",
       headers: {
@@ -28,33 +42,17 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        version: "16a37ad3d51a0c576558d5d4d3e454751277227636fb7475b9834030701e06f4",
+        version: "9c6bb482096631b5dd50665241501e86883471fd37fe144b8d3ef466fbeb32a5",
         input: {
-          face: "https://replicate.delivery/pbxt/IqA45T3zEqkGHBXkXjDWZMxWTqOONHzBlu9YrisV52wJQPAj/face.jpg",
-          audio: null,
           text: lessonData.script,
-          speaker: "en_speaker_9",
-          voice_preset: "natural"
+          voice: "emma",
+          language: "en"
         }
       }),
     })
 
     const prediction = await response.json()
     console.log("Started video generation:", prediction)
-
-    // Save video details to database
-    const { data: lessonVideo, error: dbError } = await supabase
-      .from('lesson_videos')
-      .insert({
-        lesson_id: lessonData.lessonId,
-        url: prediction.urls?.get,
-        title: lessonData.title,
-        duration: lessonData.duration
-      })
-      .select()
-      .single()
-
-    if (dbError) throw dbError
 
     return new Response(
       JSON.stringify({ 

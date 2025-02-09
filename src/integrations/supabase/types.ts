@@ -101,27 +101,30 @@ export type Database = {
           duration: number | null
           id: string
           lesson_id: string | null
+          status: string
           thumbnail_url: string | null
           title: string
-          url: string
+          url: string | null
         }
         Insert: {
           created_at?: string | null
           duration?: number | null
           id?: string
           lesson_id?: string | null
+          status?: string
           thumbnail_url?: string | null
           title: string
-          url: string
+          url?: string | null
         }
         Update: {
           created_at?: string | null
           duration?: number | null
           id?: string
           lesson_id?: string | null
+          status?: string
           thumbnail_url?: string | null
           title?: string
-          url?: string
+          url?: string | null
         }
         Relationships: [
           {

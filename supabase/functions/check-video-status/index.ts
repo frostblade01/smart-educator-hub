@@ -33,18 +33,19 @@ serve(async (req) => {
     const prediction = await response.json()
     console.log("Video status:", prediction.status)
 
-    if (prediction.status === 'succeeded') {
-      // Update video URL in database
-      const { error: updateError } = await supabase
-        .from('lesson_videos')
-        .update({ 
+    // Update video status in database
+    const { error: updateError } = await supabase
+      .from('lesson_videos')
+      .update({ 
+        status: prediction.status,
+        ...(prediction.status === 'succeeded' ? { 
           url: prediction.output,
-          thumbnail_url: prediction.output.replace('.mp4', '_thumb.jpg')
-        })
-        .eq('id', videoId)
+          thumbnail_url: prediction.output ? prediction.output.replace('.mp4', '_thumb.jpg') : null 
+        } : {})
+      })
+      .eq('id', videoId)
 
-      if (updateError) throw updateError
-    }
+    if (updateError) throw updateError
 
     return new Response(
       JSON.stringify({ 
