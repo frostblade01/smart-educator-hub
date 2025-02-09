@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,7 +49,7 @@ const AITeachingAssistant = () => {
 
     setIsGenerating(true);
     try {
-      // Create the lesson record
+      // Create the lesson record without a user_id
       const { data: lesson, error: lessonError } = await supabase
         .from('lessons')
         .insert({
@@ -57,8 +58,7 @@ const AITeachingAssistant = () => {
           subject: selectedSubject,
           duration: parseInt(duration),
           teaching_style: teachingStyle,
-          lesson_details: lessonDetails,
-          user_id: 'anonymous'  // Set a default user_id for non-authenticated users
+          lesson_details: lessonDetails
         })
         .select()
         .single();
